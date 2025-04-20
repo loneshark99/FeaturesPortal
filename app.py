@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from neo4j import GraphDatabase
+import os
 
 app = Flask(__name__, 
             template_folder='task_manager/templates',
@@ -18,7 +19,12 @@ class Neo4jConnection:
         return self.driver.session()
 
 # Initialize Neo4j connection (modify credentials as needed)
-neo4j_conn = Neo4jConnection("bolt://localhost:7687", "neo4j", "test1111")
+#neo4j_conn = Neo4jConnection("bolt://localhost:7687", "neo4j", "test1111")
+neo4j_conn = Neo4jConnection(
+    os.environ.get("NEO4J_URI", "bolt://localhost:7687"),
+    os.environ.get("NEO4J_USER", "neo4j"),
+    os.environ.get("NEO4J_PASSWORD", "test1111")
+)
 
 # Routes
 @app.route('/')
@@ -247,4 +253,5 @@ def search_by_category():
                               search_category=category)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

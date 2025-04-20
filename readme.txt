@@ -1,0 +1,2 @@
+docker run   -p 7474:7474   -p 7687:7687   -v /mnt/c/Users/yashpa/Downloads/FeaturesPortal/Neo4j:/var/lib/neo4j/import   -e NEO4J_AUTH=neo4j/test1111 -e NEO4J_ACCEPT_LICENSE_AGREEMENT=yes neo4j:enter
+prise

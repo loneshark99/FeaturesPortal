@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Feature Manager</h1>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Add Feature Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Add New Feature</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('add_feature') }}" method="post">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="feature_name" class="form-label">Feature Name</label>
+                            <input type="text" class="form-control" id="feature_name" name="feature_name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="project" class="form-label">Project</label>
+                            <input type="text" class="form-control" id="project" name="project">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="category" class="form-label">Category</label>
+                            <input type="text" class="form-control" id="category" name="category" list="category-list">
+                            <datalist id="category-list">
+                                {% for category in categories %}
+                                <option value="{{ category }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="subcategory" class="form-label">SubCategory</label>
+                            <input type="text" class="form-control" id="subcategory" name="subcategory" list="subcategory-list">
+                            <datalist id="subcategory-list">
+                                {% for subcategory in subcategories %}
+                                <option value="{{ subcategory }}">
+                                {% endfor %}
+                            </datalist>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="data_type" class="form-label">Data Type</label>
+                            <input type="text" class="form-control" id="data_type" name="data_type">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="deprecated">Deprecated</option>
+                                <option value="planned">Planned</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="source" class="form-label">Source</label>
+                            <input type="text" class="form-control" id="source" name="source">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="owner" class="form-label">Owner</label>
+                            <input type="text" class="form-control" id="owner" name="owner">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Feature</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Features List -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Features</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Project</th>
+                                <th>Category</th>
+                                <th>SubCategory</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feature in features %}
+                            <tr>
+                                <td>{{ feature.id }}</td>
+                                <td>{{ feature.name }}</td>
+                                <td>{{ feature.project }}</td>
+                                <td>{{ feature.category }}</td>
+                                <td>{{ feature.subcategory }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {% if feature.status == 'active' %}bg-success{% elif feature.status == 'planned' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ feature.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ feature.id }}">Edit</button>
+                                    <a href="{{ url_for('delete_feature', id=feature.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this feature?')">Delete</a>
+                                </td>
+                            </tr>
+
+                            <!-- Edit Modal for each feature -->
+                            <div class="modal fade" id="editModal{{ feature.id }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Feature</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ url_for('update_feature', id=feature.id) }}" method="post">
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="feature_name{{ feature.id }}" class="form-label">Feature Name</label>
+                                                        <input type="text" class="form-control" id="feature_name{{ feature.id }}" name="feature_name" value="{{ feature.name }}" required>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="project{{ feature.id }}" class="form-label">Project</label>
+                                                        <input type="text" class="form-control" id="project{{ feature.id }}" name="project" value="{{ feature.project }}">
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="category{{ feature.id }}" class="form-label">Category</label>
+                                                        <input type="text" class="form-control" id="category{{ feature.id }}" name="category" value="{{ feature.category }}" list="category-list-{{ feature.id }}">
+                                                        <datalist id="category-list-{{ feature.id }}">
+                                                            {% for category in categories %}
+                                                            <option value="{{ category }}">
+                                                            {% endfor %}
+                                                        </datalist>
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="subcategory{{ feature.id }}" class="form-label">SubCategory</label>
+                                                        <input type="text" class="form-control" id="subcategory{{ feature.id }}" name="subcategory" value="{{ feature.subcategory }}" list="subcategory-list-{{ feature.id }}">
+                                                        <datalist id="subcategory-list-{{ feature.id }}">
+                                                            {% for subcategory in subcategories %}
+                                                            <option value="{{ subcategory }}">
+                                                            {% endfor %}
+                                                        </datalist>
+                                                    </div>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="data_type{{ feature.id }}" class="form-label">Data Type</label>
+                                                        <input type="text" class="form-control" id="data_type{{ feature.id }}" name="data_type" value="{{ feature.dataType }}">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="status{{ feature.id }}" class="form-label">Status</label>
+                                                        <select class="form-select" id="status{{ feature.id }}" name="status">
+                                                            <option value="active" {% if feature.status == 'active' %}selected{% endif %}>Active</option>
+                                                            <option value="inactive" {% if feature.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                                            <option value="deprecated" {% if feature.status == 'deprecated' %}selected{% endif %}>Deprecated</option>
+                                                            <option value="planned" {% if feature.status == 'planned' %}selected{% endif %}>Planned</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="description{{ feature.id }}" class="form-label">Description</label>
+                                                    <textarea class="form-control" id="description{{ feature.id }}" name="description" rows="2">{{ feature.description }}</textarea>
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="source{{ feature.id }}" class="form-label">Source</label>
+                                                        <input type="text" class="form-control" id="source{{ feature.id }}" name="source" value="{{ feature.source }}">
+                                                    </div>
+                                                    <div class="col-md-6 mb-3">
+                                                        <label for="owner{{ feature.id }}" class="form-label">Owner</label>
+                                                        <input type="text" class="form-control" id="owner{{ feature.id }}" name="owner" value="{{ feature.owner }}">
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search by Category Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Search Features by Category</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('search_by_category') }}" method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="search_category" class="form-label">Category</label>
+                        <input type="text" class="form-control" id="search_category" name="category" list="category-search-list" required>
+                        <datalist id="category-search-list">
+                            {% for category in categories %}
+                            <option value="{{ category }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+\templates\search_results.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Manager - Search Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Feature Manager</h1>
+        <h2 class="mb-3">Search Results for Category: {{ search_category }}</h2>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <div class="mb-3">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">← Back to All Features</a>
+        </div>
+        
+        <!-- Search by Category Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Search Features by Category</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('search_by_category') }}" method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="search_category" class="form-label">Category</label>
+                        <input type="text" class="form-control" id="search_category" name="category" list="category-search-list" value="{{ search_category }}" required>
+                        <datalist id="category-search-list">
+                            {% for category in categories %}
+                            <option value="{{ category }}">
+                            {% endfor %}
+                        </datalist>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Features List -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Features in Category: {{ search_category }} ({{ features|length }} found)</h5>
+            </div>
+            <div class="card-body">
+                {% if features %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Project</th>
+                                <th>SubCategory</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for feature in features %}
+                            <tr>
+                                <td>{{ feature.id }}</td>
+                                <td>{{ feature.name }}</td>
+                                <td>{{ feature.project }}</td>
+                                <td>{{ feature.subcategory }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {% if feature.status == 'active' %}bg-success{% elif feature.status == 'planned' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ feature.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ feature.id }}">Edit</button>
+                                    <a href="{{ url_for('delete_feature', id=feature.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this feature?')">Delete</a>
+                                </td>
+                            </tr>
+
+                            <!-- Edit Modal for each feature -->
+                            <div class="modal fade" id="editModal{{ feature.id }}" tabindex="-1" aria-hidden="true">
+                                <!-- Same edit modal content as on the index page -->
+                                <div class="modal-dialog modal-lg">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Feature</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ url_for('update_feature', id=feature.id) }}" method="post">
+                                                <!-- Form fields (same as in index.html) -->
+                                                <!-- Include all the form fields from your edit modal in index.html -->
+                                                <!-- ... -->
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info">No features found in this category.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

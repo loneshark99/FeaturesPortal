@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Task Manager</h1>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-info">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <!-- Add Task Form -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Add New Task</h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('add_task') }}" method="post">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tasks List -->
+        <div class="card">
+            <div class="card-header">
+                <h5>Tasks</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr>
+                                <td>{{ task['id'] }}</td>
+                                <td>{{ task['title'] }}</td>
+                                <td>{{ task['description'] }}</td>
+                                <td>
+                                    <span class="badge rounded-pill {% if task['status'] == 'completed' %}bg-success{% elif task['status'] == 'in-progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                        {{ task['status'] }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editModal{{ task['id'] }}">Edit</button>
+                                    <a href="{{ url_for('delete_task', id=task['id']) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this task?')">Delete</a>
+                                </td>
+                            </tr>
+
+                            <!-- Edit Modal for each task -->
+                            <div class="modal fade" id="editModal{{ task['id'] }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Edit Task</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="{{ url_for('update_task', id=task['id']) }}" method="post">
+                                                <div class="mb-3">
+                                                    <label for="title{{ task['id'] }}" class="form-label">Title</label>
+                                                    <input type="text" class="form-control" id="title{{ task['id'] }}" name="title" value="{{ task['title'] }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="description{{ task['id'] }}" class="form-label">Description</label>
+                                                    <textarea class="form-control" id="description{{ task['id'] }}" name="description" rows="2">{{ task['description'] }}</textarea>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="status{{ task['id'] }}" class="form-label">Status</label>
+                                                    <select class="form-select" id="status{{ task['id'] }}" name="status">
+                                                        <option value="pending" {% if task['status'] == 'pending' %}selected{% endif %}>Pending</option>
+                                                        <option value="in-progress" {% if task['status'] == 'in-progress' %}selected{% endif %}>In Progress</option>
+                                                        <option value="completed" {% if task['status'] == 'completed' %}selected{% endif %}>Completed</option>
+                                                    </select>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

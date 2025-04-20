@@ -1,0 +1,15 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 900px;
+}
+
+.card {
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.badge {
+    text-transform: capitalize;
+}
